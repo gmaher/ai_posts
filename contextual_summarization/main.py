@@ -30,7 +30,7 @@ full_text = open("./data/google.txt").read()
 chunk_size = 2000  # Adjusted for demonstration purposes
 chunks = [full_text[i:i+chunk_size] for i in range(0, len(full_text), chunk_size)]
 
-query = "How did the performance compare to last quarter?"
+query = "What is the main driver of growth?"
 
 summaries = []
 
