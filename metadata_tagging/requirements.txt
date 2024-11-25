@@ -1,0 +1,7 @@
+numpy==1.26.4
+nltk
+spacy
+rake-nltk
+sentence-transformers
+openai
+scikit-learn

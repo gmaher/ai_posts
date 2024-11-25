@@ -3,7 +3,7 @@ import nltk
 import spacy
 from nltk.corpus import stopwords
 from gensim import corpora, models
-from gensim.summarization import keywords as gensim_keywords
+from rake_nltk import Rake
 
 # Download necessary NLTK data
 nltk.download('stopwords')
@@ -21,8 +21,10 @@ def classical_nlp_tagging(documents):
         spacy_doc = nlp(doc)
         entities = [(ent.text, ent.label_) for ent in spacy_doc.ents]
         
-        # Keyword Extraction using gensim's keywords function
-        gensim_kw = gensim_keywords(doc, words=5, split=True, lemmatize=True)
+        # Keyword Extraction using RAKE
+        rake = Rake(stopwords=stop_words)
+        rake.extract_keywords_from_text(doc)
+        gensim_kw = rake.get_ranked_phrases()[:5]  # Get top 5 keywords
         
         # Topic Modeling using LDA
         tokens = [

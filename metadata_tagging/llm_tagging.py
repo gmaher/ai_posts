@@ -1,9 +1,9 @@
 # Import necessary libraries
 import openai
 import json
+import os
 
-# Replace 'YOUR_API_KEY' with your actual OpenAI API key
-openai.api_key = 'YOUR_API_KEY'
+openai.api_key = os.environ['OPENAI_KEY']
 
 def llm_tagging(documents):
     chatgpt_tags = []
@@ -12,16 +12,18 @@ def llm_tagging(documents):
         prompt = (
             f"Please provide the entities, keywords, topics, and categories for the following document:\n\n"
             f"{doc}\n\n"
-            "Provide the answer in JSON format with keys 'entities', 'keywords', 'topics', 'categories'."
+            "Provide the answer as a JSON object with keys 'entities', 'keywords', 'topics', 'categories'."
+            "Only output the JSON object, do not use ```json tags."
         )
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Use "gpt-4" if available
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",  # Use "gpt-4" if available
             messages=[{"role": "user", "content": prompt}],
             max_tokens=200,
             temperature=0
         )
         # Parse the response
-        content = response['choices'][0]['message']['content']
+        content = response.choices[0].message.content
+        print(content)
         try:
             tags = json.loads(content)
         except json.JSONDecodeError:

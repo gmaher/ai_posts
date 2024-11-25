@@ -40,4 +40,4 @@ print("Top documents retrieved using SentenceTransformer embeddings:")
 for idx in local_rankings[:3]:
     print(f"Similarity Score: {local_similarities[idx]:.4f}")
     print(f"Document: {documents[idx]}")
-    print("-----")s
+    print("-----")
