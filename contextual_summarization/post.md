@@ -120,10 +120,12 @@ Let's break down the code step by step to understand how contextual summarizatio
     You are a summarization AI.
     You will be given a user query and a sequence of text chunks.
     Your task is to extract relevant information and summarize each text chunk contextually based on the user query.
+    The extracted information and summaries will be used by a downstream LLM to answer the user query, so it is important you extract relevant information.
+
     For your output only output a string with the relevant information/summary. Do not output anything else.
     """
     ```
-    This prompt ensures the LLM understands the specific task—extracting information contextually for each query.
+    This prompt ensures the LLM understands the specific task—extracting information contextually from each passage based on the user query.
 
 3. **Instruction Template**: The instruction template defines the instructions given to the LLM for each chunk of text:
     ```python
@@ -138,7 +140,7 @@ Let's break down the code step by step to understand how contextual summarizatio
     {passage}
     """
     ```
-    By including a log of previous summaries, the LLM can maintain continuity across multiple chunks.
+    By including a log of previous summaries, the LLM can maintain continuity when summarizing multiple chunks.
 
 4. **Splitting the Text into Chunks**: The document is split into chunks, each containing approximately `2000` characters:
     ```python
@@ -176,9 +178,10 @@ Let's break down the code step by step to understand how contextual summarizatio
     {final_summary}
     """
     ```
-    The final answer is then generated using the complete summary to address the user's query effectively.
+    The final answer is then generated using the complete summary to address the user's query.
 
-### Testing Out The Code
+### Testing Contextual Summarization on Earnings Report
+To test the code I downloaded Alphabest's Q3 2024 earnings report.
 If we now run the code with different queries, we will see that we get detailed answers of our queries about the earnings report (for the generated summaries see the appendix).
 
 For example, using the query `How did the performance compare to last quarter?`, the answer we get is:
