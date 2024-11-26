@@ -5,3 +5,5 @@ rake-nltk
 sentence-transformers
 openai
 scikit-learn
+rank_bm25
+datasets
