@@ -2,7 +2,7 @@
 
 Being able to retrieve the right documents for a given query is important when building any kind of RAG application. If retrieval performance is poor, then all downstream generation steps will not produce good results. Typically, documents are retrieved by running a search algorithm such as BM25 or using vector search based on the input query. However, this does not work well if the query is missing keywords, or if the embedding computed from the query is not similar to the embeddings of relevant documents.
 
-One way to improve the retrieval of relevant documents is by adding metadata at the document ingestion phase. This metadata increases the likelihood that a query will match relevant documents when using search algorithms. In this blog post, we'll explore this approach using language models for metadata tagging.
+One way to improve the retrieval of relevant documents is by adding metadata to the document during ingestion. This metadata increases the likelihood that a query will match relevant documents when using search algorithms. In this blog post, we will explore this approach using language models for metadata tagging.
 
 ## Approach to Metadata Tagging
 
@@ -10,11 +10,13 @@ To do metadata tagging we need to decide what metadata to extract and how to ext
 
 Next we need to determine how to extract the metadata for an arbitrary document. There are many classical NLP algorithms for extracting various types of data, but these tend to be focused on only extracting specific categories such as entities or locations. A more flexible approach is just to ask an LLM to extract the metadata, this way we can just specify the metadata we want without having to worry about the algorithm (although we would need to test the accuracy).
 
-In this article we create an example application of that uses LLMs to extract various kinds of metadata from news articles, and compares search performance with and without tags.
+In this article we create an example application that uses LLMs to extract metadata from news articles, and compares search performance with and without tags.
 
 ## Code Example
 
 Here is the code we will use. At a high level we load the dataset, tag the documents using the LLM and then, given a query, search for relevant documents.
+
+Get the code [here](https://github.com/gmaher/ai_posts/blob/master/metadata_tagging/llm_tagging.py).
 
 ```python
 import openai
@@ -125,7 +127,7 @@ Here is a step-by-step explanation of the code.
 
 3. **Set API Key**: The OpenAI API key is set using an environment variable.
 
-4. **Define LLM Tagging Function**: The `llm_tagging` function sends each document to the OpenAI API to retrieve entities, keywords, topics, and categories. It handles JSON decoding errors by providing default empty lists.
+4. **Define LLM Tagging Function**: The `llm_tagging` function sends each document to the OpenAI API to retrieve entities, keywords, topics, and categories.
 
 5. **Define BM25 Search Function**: The `bm25_search` function uses the BM25 algorithm to search for documents most relevant to a given query.
 
@@ -133,7 +135,7 @@ Here is a step-by-step explanation of the code.
 
 7. **Tag Documents**: Calls the `llm_tagging` function to obtain metadata (entities, keywords, topics, categories) for each document.
 
-8. **Stringify Tags**: Converts the metadata tags to strings by concatenating lists into single strings. Special characters need to be removed as they interfere with the keyword search.
+8. **Stringify Tags**: To add the metadata to each document we simply convert it to a string and add it at the end of the document. Special characters need to be removed as they interfere with the keyword search.
 
 9. **Define Query**: Sets the search query as "Football news".
 
@@ -155,8 +157,8 @@ Here is a step-by-step explanation of the code.
     - Outputs vector search results for both the documents and the tags, displaying document indices, scores, and content.
 
 ## Improvement through Metadata Tagging
-
-The results from running the code with the query `Football news` are:
+We test the code by searching for relevant documents for the query `Football news`.
+The results are surprising:
 
 ```plaintext
 BM25 NO TAGS
@@ -244,7 +246,7 @@ document Guardiola To Leave Man City When Contract Expires in 2023 Pep Guardiola
 ---
 ```
 
-* The BM25 search without tags performed very poorly, no relevant documents were surfaced. We see that keyword search can fail if a query requires more broad information to answer such as topics or categories.
+* The BM25 search without tags performed very poorly, no relevant documents were surfaced. This is because the articles about football, did not actually contain the keyword football. So we see that keyword search can fail if a query requires more broad information to answer such as topics or categories.
 
 * Adding the metadata tags to the documents drastically improved the BM25 search, we now correctly get articles related to football, even though the football keyword does not appear in the documents.
 
