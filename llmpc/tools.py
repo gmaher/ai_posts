@@ -42,7 +42,7 @@ class FileTools:
                 new_lines = new_lines[:-1]
             
             # Replace lines
-            lines[start_line-1:end_line] = [line + '\n' for line in new_lines]
+            lines[start_line:end_line+1] = [line + '\n' for line in new_lines]
             
             with open(filepath, 'w') as f:
                 f.writelines(lines)
