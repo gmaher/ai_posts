@@ -1,22 +1,23 @@
 import os
 from tools import CodeGenerator
 from openai import OpenAI
-system_preamble ="""
+
+system_prompt ="""
 You are an intelligent software engineering AI assistant.
 You write clear, concise and modular maintable code.
 
-You have been asked to complete the following project
+You have been asked to complete the following project:
 {goal}
 
-The previous actions you took are
+The previous actions you took are:
 {actions}
 
-The relevant project state context is
+The relevant project state context is:
 {context}
 
 """
 
-system_planner = system_preamble + """
+prompt_planner = """
 Now plan the next {k} steps to achieve the goal.
 
 Format your output as:
@@ -27,7 +28,7 @@ PLAN:
 ...
 """
 
-system_executor = system_preamble +"""
+prompt_executor = """
 The next steps for you to execute are:
 {plan}
 
@@ -39,12 +40,12 @@ You have access to the following tools:
 
 When using tools, wrap the tool call in <tool></tool> tags and format as JSON:
 <tool>
-{
+{{
     "name": "CREATE_FILE",
-    "arguments": {
+    "arguments": {{
         "filename": "example.txt"
-    }
-}
+    }}
+}}
 </tool>
 
 Now please execute the plan.
@@ -66,12 +67,15 @@ class LLMPC:
         )
 
     def plan(self, k: int = 3) -> list:
-        prompt = self.get_system_prompt(system_planner, k=k)
+        prompt = self.get_system_prompt(system_prompt)
+        instruction = prompt_planner.format(k=k)
+        print(prompt, instruction)
         response = self.generator.client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "system", "content": prompt}],
+            model="gpt-4o",
+            messages=[{"role": "system", "content": prompt}, 
+            {"role":"user", "content":instruction}],
             temperature=0.7,
-            max_tokens=1000
+            max_tokens=4096
         )
         
         # Extract plan steps from response
@@ -84,13 +88,18 @@ class LLMPC:
         return steps
 
     def execute(self, plan: list) -> None:
-        prompt = self.get_system_prompt(system_executor, plan="\n".join(f"{i+1}. {step}" for i, step in enumerate(plan)))
-        self.generator.generate(prompt, "")
+        plan_string ="\n".join(f"{i+1}. {step}" for i, step in enumerate(plan))
+        prompt = self.get_system_prompt(system_prompt)
+        instruction = prompt_executor.format(plan=plan_string)
+        print(prompt, instruction)
+        self.generator.generate(prompt, instruction)
         self.actions.extend(plan)
 
 def main():
-    # Replace with your OpenAI API key
-    api_key = "your-api-key-here"
+    api_key = os.getenv("OPENAI_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_KEY environment variable not set")
+
     goal = "create flappy bird using html javascript and css"
     
     llmpc = LLMPC(api_key, goal)
